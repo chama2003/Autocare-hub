@@ -1,0 +1,6 @@
+{
+  "_comment": "Add these to your fresh Laravel app's composer.json 'require' section, then run: composer update",
+  "require_to_add": {
+    "barryvdh/laravel-dompdf": "^2.2"
+  }
+}
