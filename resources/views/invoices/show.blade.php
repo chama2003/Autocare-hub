@@ -3,63 +3,76 @@
 @section('page-title', 'Invoice ' . $invoice->invoice_number)
 
 @section('content')
-<div class="bg-white rounded-xl shadow-sm p-6 max-w-3xl">
-    <div class="flex justify-between items-start mb-6">
+<div class="mx-auto max-w-4xl rounded-[30px] border border-slate-200 bg-white p-6 shadow-soft dark:border-slate-800 dark:bg-slate-900">
+    <div class="flex flex-col gap-4 border-b border-slate-200 pb-6 md:flex-row md:items-start md:justify-between dark:border-slate-800">
         <div>
-            <h2 class="text-xl font-bold">AutoCare Hub</h2>
-            <p class="text-sm text-slate-500">Invoice #{{ $invoice->invoice_number }}</p>
+            <div class="flex items-center gap-3">
+                <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900 dark:text-white">AutoCare Hub</h2>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">Invoice #{{ $invoice->invoice_number }}</p>
+                </div>
+            </div>
         </div>
-        <div class="text-right">
-            <p class="text-sm text-slate-500">Date</p>
-            <p class="font-medium">{{ $invoice->created_at->format('d M Y') }}</p>
+        <div class="text-left md:text-right">
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Issued</p>
+            <p class="mt-2 text-base font-semibold text-slate-900 dark:text-white">{{ $invoice->created_at->format('d M Y') }}</p>
         </div>
     </div>
 
-    <div class="grid grid-cols-2 gap-6 mb-6 text-sm">
-        <div>
-            <p class="text-slate-500">Billed To</p>
-            <p class="font-medium">{{ $invoice->customer->name }}</p>
-            <p>{{ $invoice->customer->phone }}</p>
+    <div class="mt-6 grid gap-6 md:grid-cols-2">
+        <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-950/50">
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Billed to</p>
+            <p class="mt-2 text-base font-semibold text-slate-900 dark:text-white">{{ $invoice->customer->name }}</p>
+            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ $invoice->customer->phone }}</p>
         </div>
-        <div>
-            <p class="text-slate-500">Vehicle</p>
-            <p class="font-medium">{{ $invoice->jobCard->vehicle->plate_number }} — {{ $invoice->jobCard->vehicle->make }} {{ $invoice->jobCard->vehicle->model }}</p>
-            <p>Job Card: {{ $invoice->jobCard->job_card_number }}</p>
-        </div>
-    </div>
-
-    <table class="w-full text-sm mb-6">
-        <thead class="text-left text-slate-500 border-b">
-            <tr><th class="py-2">Item</th><th class="text-right">Amount (Rs.)</th></tr>
-        </thead>
-        <tbody>
-            @foreach($invoice->jobCard->serviceItems as $item)
-            <tr class="border-b"><td class="py-2">Service: {{ $item->serviceType->name }}</td><td class="text-right">{{ number_format($item->cost, 2) }}</td></tr>
-            @endforeach
-            @foreach($invoice->jobCard->partsUsed as $part)
-            <tr class="border-b"><td class="py-2">Part: {{ $part->sparePart->name }} x {{ $part->quantity }}</td><td class="text-right">{{ number_format($part->lineTotal(), 2) }}</td></tr>
-            @endforeach
-        </tbody>
-    </table>
-
-    <div class="flex justify-end">
-        <div class="w-64 text-sm space-y-1">
-            <div class="flex justify-between"><span>Labor Total</span><span>{{ number_format($invoice->labor_total, 2) }}</span></div>
-            <div class="flex justify-between"><span>Parts Total</span><span>{{ number_format($invoice->parts_total, 2) }}</span></div>
-            <div class="flex justify-between"><span>Tax</span><span>{{ number_format($invoice->tax_amount, 2) }}</span></div>
-            <div class="flex justify-between"><span>Discount</span><span>-{{ number_format($invoice->discount_amount, 2) }}</span></div>
-            <div class="flex justify-between font-bold text-base border-t pt-2"><span>Grand Total</span><span>Rs. {{ number_format($invoice->grand_total, 2) }}</span></div>
+        <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-950/50">
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Vehicle</p>
+            <p class="mt-2 text-base font-semibold text-slate-900 dark:text-white">{{ $invoice->jobCard->vehicle->plate_number }} — {{ $invoice->jobCard->vehicle->make }} {{ $invoice->jobCard->vehicle->model }}</p>
+            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Job Card: {{ $invoice->jobCard->job_card_number }}</p>
         </div>
     </div>
 
-    <div class="mt-6 flex gap-3">
-        <a href="{{ route('invoices.download', $invoice) }}" class="bg-brand-600 hover:bg-brand-700 text-white px-5 py-2 rounded-lg text-sm font-medium">
-            <i class="fa-solid fa-download mr-1"></i> Download PDF
+    <div class="mt-6 overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800">
+        <table class="min-w-full text-sm">
+            <thead class="bg-slate-50 text-left text-slate-500 dark:bg-slate-950/80 dark:text-slate-400">
+                <tr><th class="px-4 py-3">Item</th><th class="px-4 py-3 text-right">Amount (Rs.)</th></tr>
+            </thead>
+            <tbody>
+                @foreach($invoice->jobCard->serviceItems as $item)
+                <tr class="border-t border-slate-200 dark:border-slate-800"><td class="px-4 py-3">Service: {{ $item->serviceType->name }}</td><td class="px-4 py-3 text-right metric-number">{{ number_format($item->cost, 2) }}</td></tr>
+                @endforeach
+                @foreach($invoice->jobCard->partsUsed as $part)
+                <tr class="border-t border-slate-200 dark:border-slate-800"><td class="px-4 py-3">Part: {{ $part->sparePart->name }} x {{ $part->quantity }}</td><td class="px-4 py-3 text-right metric-number">{{ number_format($part->lineTotal(), 2) }}</td></tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-6 flex justify-end">
+        <div class="w-full max-w-xs rounded-2xl bg-slate-50 p-4 dark:bg-slate-950/50">
+            <div class="space-y-2 text-sm text-slate-600 dark:text-slate-300">
+                <div class="flex items-center justify-between"><span>Labor Total</span><span class="metric-number">{{ number_format($invoice->labor_total, 2) }}</span></div>
+                <div class="flex items-center justify-between"><span>Parts Total</span><span class="metric-number">{{ number_format($invoice->parts_total, 2) }}</span></div>
+                <div class="flex items-center justify-between"><span>Tax</span><span class="metric-number">{{ number_format($invoice->tax_amount, 2) }}</span></div>
+                <div class="flex items-center justify-between"><span>Discount</span><span class="metric-number">-{{ number_format($invoice->discount_amount, 2) }}</span></div>
+            </div>
+            <div class="mt-3 border-t border-slate-200 pt-3 dark:border-slate-800">
+                <div class="flex items-center justify-between text-base font-bold text-slate-900 dark:text-white"><span>Grand Total</span><span class="metric-number">Rs. {{ number_format($invoice->grand_total, 2) }}</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-6 flex flex-col gap-3 sm:flex-row">
+        <a href="{{ route('invoices.download', $invoice) }}" class="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-violet-500/20 hover:from-indigo-400 hover:to-violet-400">
+            <i class="fa-solid fa-download"></i> Download PDF
         </a>
         @if((auth()->user()->isStaff() || auth()->user()->isAdmin()) && $invoice->status !== 'paid')
         <form method="POST" action="{{ route('invoices.markPaid', $invoice) }}">
             @csrf
-            <button class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-lg text-sm font-medium">Mark as Paid</button>
+            <button class="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20 hover:bg-emerald-400">
+                <i class="fa-solid fa-circle-check"></i> Mark as Paid
+            </button>
         </form>
         @endif
     </div>

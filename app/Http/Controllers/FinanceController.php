@@ -16,14 +16,25 @@ class FinanceController extends Controller
     public function dashboard(Request $request)
     {
         $year = $request->integer('year', now()->year);
+        $driver = DB::getDriverName();
 
-        $monthlyRevenue = Invoice::selectRaw('MONTH(created_at) as month, SUM(grand_total) as total')
+        $monthExpression = match ($driver) {
+            'sqlite' => "CAST(strftime('%m', created_at) AS INTEGER)",
+            default => 'MONTH(created_at)',
+        };
+
+        $expenseMonthExpression = match ($driver) {
+            'sqlite' => "CAST(strftime('%m', expense_date) AS INTEGER)",
+            default => 'MONTH(expense_date)',
+        };
+
+        $monthlyRevenue = Invoice::selectRaw($monthExpression . ' as month, SUM(grand_total) as total')
             ->where('status', 'paid')
             ->whereYear('created_at', $year)
             ->groupBy('month')
             ->pluck('total', 'month');
 
-        $monthlyExpenses = Expense::selectRaw('MONTH(expense_date) as month, SUM(amount) as total')
+        $monthlyExpenses = Expense::selectRaw($expenseMonthExpression . ' as month, SUM(amount) as total')
             ->whereYear('expense_date', $year)
             ->groupBy('month')
             ->pluck('total', 'month');

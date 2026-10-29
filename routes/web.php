@@ -5,6 +5,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FinanceController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\JobCardController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SparePartController;
 use App\Http\Controllers\VehicleController;
 use Illuminate\Support\Facades\Route;
@@ -23,6 +24,10 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
     // ---- Vehicles (customers manage their own; staff/admin manage all) ----
     Route::resource('vehicles', VehicleController::class);
 
@@ -38,7 +43,9 @@ Route::middleware(['auth'])->group(function () {
 
     // ---- Job cards (mechanic/workshop panel) ----
     Route::middleware('role:staff,admin,mechanic')->group(function () {
-        Route::resource('jobcards', JobCardController::class)->only(['index', 'create', 'store', 'show']);
+        Route::resource('jobcards', JobCardController::class)
+            ->parameters(['jobcards' => 'jobCard'])
+            ->only(['index', 'create', 'store', 'show']);
         Route::put('/jobcards/{jobCard}/status', [JobCardController::class, 'updateStatus'])->name('jobcards.status');
         Route::post('/jobcards/{jobCard}/services', [JobCardController::class, 'addServiceItem'])->name('jobcards.services.add');
         Route::post('/jobcards/{jobCard}/parts', [JobCardController::class, 'addPart'])->name('jobcards.parts.add');
@@ -70,4 +77,4 @@ Route::middleware(['auth'])->group(function () {
     });
 });
 
-// require __DIR__.'/auth.php'; // Provided by Laravel Breeze - see README
+require __DIR__.'/auth.php';

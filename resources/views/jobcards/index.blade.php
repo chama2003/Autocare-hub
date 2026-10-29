@@ -3,38 +3,40 @@
 @section('page-title', 'Job Card Management')
 
 @section('content')
-<div class="flex justify-between items-center mb-5">
-    <div class="flex gap-2 text-sm">
+<div class="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <div class="flex flex-wrap gap-2 text-sm">
         @foreach(['' => 'All', 'pending' => 'Pending', 'in_progress' => 'In Progress', 'quality_check' => 'Quality Check', 'completed' => 'Completed'] as $key => $label)
         <a href="{{ route('jobcards.index', $key ? ['status' => $key] : []) }}"
-           class="px-3 py-1.5 rounded-full {{ request('status', '') === $key ? 'bg-brand-600 text-white' : 'bg-slate-100 text-slate-600' }}">{{ $label }}</a>
+           class="rounded-full px-3 py-1.5 font-medium {{ request('status', '') === $key ? 'bg-gradient-to-r from-indigo-500 to-violet-500 text-white shadow-lg shadow-violet-500/20' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700' }}">{{ $label }}</a>
         @endforeach
     </div>
-    <a href="{{ route('jobcards.create') }}" class="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
-        <i class="fa-solid fa-plus mr-1"></i> Open Job Card
+    <a href="{{ route('jobcards.create') }}" class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-violet-500/20 hover:from-indigo-400 hover:to-violet-400">
+        <i class="fa-solid fa-plus"></i> Open Job Card
     </a>
 </div>
 
-<div class="bg-white rounded-xl shadow-sm overflow-hidden">
-    <table class="w-full text-sm">
-        <thead class="bg-slate-50 text-left text-slate-500">
-            <tr><th class="px-4 py-3">Job Card #</th><th class="px-4 py-3">Vehicle</th><th class="px-4 py-3">Mechanic</th><th class="px-4 py-3">Opened</th><th class="px-4 py-3">Status</th><th></th></tr>
-        </thead>
-        <tbody>
-            @forelse($jobCards as $jc)
-            <tr class="border-t hover:bg-slate-50">
-                <td class="px-4 py-3 font-medium">{{ $jc->job_card_number }}</td>
-                <td class="px-4 py-3">{{ $jc->vehicle->plate_number }}</td>
-                <td class="px-4 py-3">{{ $jc->mechanic?->name ?? '—' }}</td>
-                <td class="px-4 py-3">{{ $jc->opened_at->format('d M Y') }}</td>
-                <td class="px-4 py-3"><span class="px-2 py-0.5 rounded-full text-xs bg-amber-100 text-amber-700 capitalize">{{ str_replace('_',' ',$jc->status) }}</span></td>
-                <td class="px-4 py-3 text-right"><a href="{{ route('jobcards.show', $jc) }}" class="text-brand-600 hover:underline">Open</a></td>
-            </tr>
-            @empty
-            <tr><td colspan="6" class="px-4 py-8 text-center text-slate-400">No job cards found.</td></tr>
-            @endforelse
-        </tbody>
-    </table>
+<div class="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-soft dark:border-slate-800 dark:bg-slate-900">
+    <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+            <thead class="bg-slate-50 text-left text-slate-500 dark:bg-slate-950/80 dark:text-slate-400">
+                <tr><th class="px-4 py-3">Job Card #</th><th class="px-4 py-3">Vehicle</th><th class="px-4 py-3">Mechanic</th><th class="px-4 py-3">Opened</th><th class="px-4 py-3">Status</th><th class="px-4 py-3 text-right"></th></tr>
+            </thead>
+            <tbody>
+                @forelse($jobCards as $jc)
+                <tr class="border-t border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:text-slate-200 dark:hover:bg-slate-950/50">
+                    <td class="px-4 py-3 font-semibold">{{ $jc->job_card_number }}</td>
+                    <td class="px-4 py-3">{{ $jc->vehicle->plate_number }}</td>
+                    <td class="px-4 py-3">{{ $jc->mechanic?->name ?? '—' }}</td>
+                    <td class="px-4 py-3">{{ $jc->opened_at->format('d M Y') }}</td>
+                    <td class="px-4 py-3"><x-badge :variant="match($jc->status) { 'pending' => 'warning', 'in_progress' => 'info', 'quality_check' => 'primary', 'completed' => 'success', default => 'default' }">{{ str_replace('_',' ',$jc->status) }}</x-badge></td>
+                    <td class="px-4 py-3 text-right"><a href="{{ route('jobcards.show', $jc) }}" class="inline-flex items-center rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700">Open</a></td>
+                </tr>
+                @empty
+                <tr><td colspan="6" class="px-4 py-10 text-center text-slate-500 dark:text-slate-400">No job cards found.</td></tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 </div>
 @if(method_exists($jobCards, 'links'))<div class="mt-4">{{ $jobCards->links() }}</div>@endif
 @endsection

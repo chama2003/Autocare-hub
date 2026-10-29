@@ -3,13 +3,19 @@
 @section('page-title', 'Job Card: ' . $jobCard->job_card_number)
 
 @section('content')
+@php($vehicle = $jobCard->vehicle)
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     {{-- Left: summary + status --}}
     <div class="bg-white rounded-xl shadow-sm p-6 lg:col-span-1 space-y-4">
         <div>
             <p class="text-sm text-slate-500">Vehicle</p>
-            <p class="font-semibold">{{ $jobCard->vehicle->plate_number }} — {{ $jobCard->vehicle->make }} {{ $jobCard->vehicle->model }}</p>
-            <p class="text-xs text-slate-400">Owner: {{ $jobCard->vehicle->owner->name }}</p>
+            @if($vehicle)
+                <p class="font-semibold">{{ $vehicle->plate_number }} — {{ $vehicle->make }} {{ $vehicle->model }}</p>
+                <p class="text-xs text-slate-400">Owner: {{ $vehicle->owner?->name ?? 'Unknown owner' }}</p>
+            @else
+                <p class="font-semibold text-slate-600">Vehicle not assigned</p>
+                <p class="text-xs text-slate-400">No vehicle is linked to this job card.</p>
+            @endif
         </div>
         <div>
             <p class="text-sm text-slate-500">Mileage at Service</p>
@@ -32,7 +38,7 @@
             <input type="number" step="0.25" name="labor_hours" value="{{ $jobCard->labor_hours }}" class="w-full border rounded-lg px-3 py-2 text-sm">
             <label class="block text-sm font-medium">Diagnosis</label>
             <textarea name="diagnosis" rows="3" class="w-full border rounded-lg px-3 py-2 text-sm">{{ $jobCard->diagnosis }}</textarea>
-            <button class="w-full bg-brand-600 hover:bg-brand-700 text-white py-2 rounded-lg text-sm font-medium">Update Status</button>
+            <button class="w-full rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-2">Update Status</button>
         </form>
 
         <div class="pt-3 border-t text-sm">
@@ -42,15 +48,18 @@
         </div>
 
         @if($jobCard->invoice)
-            <a href="{{ route('invoices.show', $jobCard->invoice) }}" class="block text-center bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg text-sm font-medium">View Invoice</a>
+            <a href="{{ route('invoices.show', $jobCard->invoice) }}" class="block text-center rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-500">View Invoice</a>
         @elseif($jobCard->status === 'completed')
+            <div class="rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700">
+                Ready for checkout
+            </div>
             <form method="POST" action="{{ route('invoices.generate', $jobCard) }}" class="space-y-2 pt-2">
                 @csrf
                 <label class="block text-xs text-slate-500">Tax Rate (%)</label>
-                <input type="number" step="0.01" name="tax_rate" value="0" class="w-full border rounded-lg px-3 py-2 text-sm">
+                <input type="number" step="0.01" name="tax_rate" value="0" class="w-full border rounded-lg px-3 py-2 text-sm focus:border-slate-400 focus:outline-none">
                 <label class="block text-xs text-slate-500">Discount (Rs.)</label>
-                <input type="number" step="0.01" name="discount_amount" value="0" class="w-full border rounded-lg px-3 py-2 text-sm">
-                <button class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg text-sm font-medium">Generate Invoice</button>
+                <input type="number" step="0.01" name="discount_amount" value="0" class="w-full border rounded-lg px-3 py-2 text-sm focus:border-slate-400 focus:outline-none">
+                <button class="w-full rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:ring-offset-2">Check Out</button>
             </form>
         @endif
     </div>
@@ -77,7 +86,7 @@
                     @endforeach
                 </select>
                 <input type="number" step="0.01" name="cost" placeholder="Cost" required class="w-32 border rounded-lg px-3 py-2 text-sm">
-                <button class="bg-brand-600 hover:bg-brand-700 text-white px-4 rounded-lg text-sm">Add</button>
+                <button class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800">Add</button>
             </form>
         </div>
 
@@ -101,7 +110,7 @@
                     @endforeach
                 </select>
                 <input type="number" name="quantity" value="1" min="1" required class="w-24 border rounded-lg px-3 py-2 text-sm">
-                <button class="bg-brand-600 hover:bg-brand-700 text-white px-4 rounded-lg text-sm">Assign</button>
+                <button class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800">Assign</button>
             </form>
         </div>
     </div>

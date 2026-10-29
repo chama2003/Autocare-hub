@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Appointment;
+use App\Models\JobCard;
 use App\Models\ServiceType;
+use App\Models\User;
 use App\Models\Vehicle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -79,7 +81,24 @@ class AppointmentController extends Controller
     {
         $appointment->update(['status' => 'approved', 'approved_by' => Auth::id()]);
 
-        return back()->with('success', 'Appointment approved.');
+        if (! $appointment->jobCard()->exists()) {
+            $mechanic = User::where('role', 'mechanic')->orderBy('id')->first();
+
+            JobCard::create([
+                'job_card_number' => 'JC-' . now()->format('Y') . '-' . str_pad((string) (JobCard::count() + 1), 4, '0', STR_PAD_LEFT),
+                'vehicle_id' => $appointment->vehicle_id,
+                'appointment_id' => $appointment->id,
+                'mechanic_id' => $mechanic?->id,
+                'created_by' => Auth::id(),
+                'mileage_at_service_km' => $appointment->vehicle?->current_mileage_km,
+                'customer_complaint' => $appointment->notes ?: 'Service request raised from approved appointment.',
+                'status' => 'pending',
+                'labor_rate_per_hour' => 1500,
+                'opened_at' => now(),
+            ]);
+        }
+
+        return back()->with('success', 'Appointment approved and active job card opened.');
     }
 
     /** Staff/Admin action: reschedule to a new date/time. */
